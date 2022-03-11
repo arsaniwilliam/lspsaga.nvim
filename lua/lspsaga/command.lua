@@ -11,6 +11,7 @@ local implement = require "lspsaga.implement"
 local subcommands = {
   lsp_finder = provider.lsp_finder,
   preview_definition = provider.preview_definition,
+  preview_type_definition = provider.preview_type_definition,
   rename = lsprename.rename,
   hover_doc = lsphover.render_hover_doc,
   show_cursor_diagnostics = diagnostic.show_cursor_diagnostics,
