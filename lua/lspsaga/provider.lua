@@ -1,7 +1,7 @@
-local window = require "lspsaga.window"
+local window = require("lspsaga.window")
 local vim, api, lsp, vfn = vim, vim.api, vim.lsp, vim.fn
 local config = require("lspsaga").config_values
-local libs = require "lspsaga.libs"
+local libs = require("lspsaga.libs")
 local home_dir = libs.get_home_dir()
 local scroll_in_win = require("lspsaga.action").scroll_in_win
 
@@ -51,7 +51,7 @@ function Finder:lsp_finder_request()
   return uv.new_async(vim.schedule_wrap(function()
     local root_dir = libs.get_lsp_root_dir()
     if string.len(root_dir) == 0 then
-      print "[LspSaga] get root dir failed"
+      print("[LspSaga] get root dir failed")
       return
     end
     self.WIN_WIDTH = vim.fn.winwidth(0)
@@ -82,7 +82,7 @@ function Finder:create_finder_contents(result, method_type, root_dir)
       { icon = config.finder_definition_icon, title = ":  " .. #result .. " Definitions" },
       { icon = config.finder_reference_icon, title = ":  " .. #result .. " References" },
     }
-    local params = vim.fn.expand "<cword>"
+    local params = vim.fn.expand("<cword>")
     self.param_length = #params
     local title = method_option[method_type].icon .. params .. method_option[method_type].title
 
@@ -167,8 +167,8 @@ function Finder:render_finder_result()
   end
   table.insert(self.contents, " ")
   -- get dimensions
-  local width = api.nvim_get_option "columns"
-  local height = api.nvim_get_option "lines"
+  local width = api.nvim_get_option("columns")
+  local height = api.nvim_get_option("lines")
 
   -- calculate our floating window size
   local win_height = math.ceil(height * 0.8)
@@ -204,10 +204,10 @@ function Finder:render_finder_result()
   if not self.cursor_line_bg and not self.cursor_line_fg then
     self:get_cursorline_highlight()
   end
-  api.nvim_command "highlight! link CursorLine LspSagaFinderSelection"
-  api.nvim_command 'autocmd CursorMoved <buffer> lua require("lspsaga.provider").set_cursor()'
-  api.nvim_command 'autocmd CursorMoved <buffer> lua require("lspsaga.provider").auto_open_preview()'
-  api.nvim_command "autocmd QuitPre <buffer> lua require('lspsaga.provider').close_lsp_finder_window()"
+  api.nvim_command("highlight! link CursorLine LspSagaFinderSelection")
+  api.nvim_command('autocmd CursorMoved <buffer> lua require("lspsaga.provider").set_cursor()')
+  api.nvim_command('autocmd CursorMoved <buffer> lua require("lspsaga.provider").auto_open_preview()')
+  api.nvim_command("autocmd QuitPre <buffer> lua require('lspsaga.provider').close_lsp_finder_window()")
 
   for i = 1, self.definition_uri, 1 do
     api.nvim_buf_add_highlight(self.contents_buf or 0, -1, "TargetFileName", 1 + i, 0, -1)
@@ -278,7 +278,7 @@ function Finder:lsp_finder_highlight()
 end
 
 function Finder:set_cursor()
-  local current_line = vim.fn.line "."
+  local current_line = vim.fn.line(".")
   local column = 2
 
   local first_def_uri_lnum = self.definition_uri ~= 0 and 3 or 5
@@ -305,12 +305,12 @@ function Finder:set_cursor()
 end
 
 function Finder:get_cursorline_highlight()
-  self.cursor_line_bg = vfn.synIDattr(vfn.hlID "cursorline", "bg")
-  self.cursor_line_fg = vfn.synIDattr(vfn.hlID "cursorline", "fg")
+  self.cursor_line_bg = vfn.synIDattr(vfn.hlID("cursorline"), "bg")
+  self.cursor_line_fg = vfn.synIDattr(vfn.hlID("cursorline"), "fg")
 end
 
 function Finder:auto_open_preview()
-  local current_line = vim.fn.line "."
+  local current_line = vim.fn.line(".")
   if not self.short_link[current_line] then
     return
   end
@@ -319,7 +319,7 @@ function Finder:auto_open_preview()
   if next(content) ~= nil then
     local has_var, finder_win_opts = pcall(api.nvim_win_get_var, 0, "lsp_finder_win_opts")
     if not has_var then
-      print "get finder window options wrong"
+      print("get finder window options wrong")
       return
     end
     local opts = {
@@ -330,7 +330,7 @@ function Finder:auto_open_preview()
 
     local finder_width = vim.fn.winwidth(0)
     local finder_height = vim.fn.winheight(0)
-    local screen_width = api.nvim_get_option "columns"
+    local screen_width = api.nvim_get_option("columns")
 
     local content_width = 0
     for _, line in ipairs(content) do
@@ -396,10 +396,10 @@ end
 -- action 3 mean split
 function Finder:open_link(action_type)
   local action = { "edit ", "vsplit ", "split " }
-  local current_line = vim.fn.line "."
+  local current_line = vim.fn.line(".")
 
   if self.short_link[current_line] == nil then
-    error "[LspSaga] target file uri not exist"
+    error("[LspSaga] target file uri not exist")
     return
   end
 
@@ -441,11 +441,11 @@ function Finder:clear_tmp_data()
   self.buf_filetype = ""
   self.WIN_HEIGHT = 0
   self.WIN_WIDTH = 0
-  if self.cursor_line_bg ~= '' then
-    api.nvim_command('hi! CursorLine  guibg='..self.cursor_line_bg)
+  if self.cursor_line_bg ~= "" then
+    api.nvim_command("hi! CursorLine  guibg=" .. self.cursor_line_bg)
   end
-  if self.cursor_line_fg == '' then
-    api.nvim_command('hi! CursorLine  guifg=NONE')
+  if self.cursor_line_fg == "" then
+    api.nvim_command("hi! CursorLine  guifg=NONE")
   end
 end
 
@@ -481,7 +481,7 @@ function lspfinder.scroll_in_preview(direction)
   Finder:scroll_in_preview(direction)
 end
 
-function lspfinder.preview_definition(timeout_ms)
+local function preview(method, timeout_ms)
   local active, msg = libs.check_lsp_active()
   if not active then
     print(msg)
@@ -489,7 +489,7 @@ function lspfinder.preview_definition(timeout_ms)
   end
   local filetype = vim.api.nvim_buf_get_option(0, "filetype")
 
-  local method = "textDocument/definition"
+  -- local method = "textDocument/definition"
   local params = lsp.util.make_position_params()
   local result = vim.lsp.buf_request_sync(0, method, params, timeout_ms or 1000)
   if result == nil or vim.tbl_isempty(result) then
@@ -498,7 +498,7 @@ function lspfinder.preview_definition(timeout_ms)
   end
 
   if vim.tbl_islist(result) then
-    for _, definition in ipairs(result) do
+    for _, definition in pairs(result) do
       if not vim.tbl_isempty(definition) and not vim.tbl_isempty(definition.result) then
         local uri = definition.result[1].uri or definition.result[1].targetUri
         if #uri == 0 then
@@ -549,7 +549,7 @@ function lspfinder.preview_definition(timeout_ms)
           style = "minimal",
         }
 
-        local WIN_WIDTH = api.nvim_get_option "columns"
+        local WIN_WIDTH = api.nvim_get_option("columns")
         local max_width = math.floor(WIN_WIDTH * 0.5)
         local width, _ = vim.lsp.util._make_floating_popup_size(content, opts)
 
@@ -571,6 +571,15 @@ function lspfinder.preview_definition(timeout_ms)
       end
     end
   end
+end
+
+function lspfinder.preview_definition(timeout_ms)
+  local method = "textDocument/definition"
+  preview(method, timeout_ms)
+end
+function lspfinder.preview_type_definition(timeout_ms)
+  local method = "textDocument/typeDefinition"
+  preview(method, timeout_ms)
 end
 
 function lspfinder.has_saga_def_preview()
